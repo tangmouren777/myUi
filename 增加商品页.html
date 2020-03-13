@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>无标题文档</title>
+		<link href="css/common.css" rel="stylesheet" type="text/css" />
+		<link href="css/style.css" rel="stylesheet" type="text/css" />
+	</head>
+
+	<body>
+		<div id="addsApp" v-loading="loading">
+			<el-row>
+				<div>
+					<h1 class="lf">在线拍卖系统</h1>
+				</div>
+			</el-row>
+			<el-row>
+				<div>
+					<h2 style="color: #0096FF; float: left;">拍卖商品信息</h2>
+				</div>
+			</el-row>
+			<el-form :model="pmp" ref="shoppForm" :rules="shoppRules" label-width="100px">
+				<el-form-item label="名称" prop="pmpname">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="pmp.pmpname" placeholder="请输入名称"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="起拍价" prop="pmpqpj">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="pmp.pmpqpj" placeholder="请输入拍价"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="底价" prop="pmpdj">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="pmp.pmpdj" placeholder="请输入底价"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="开始时间" prop="pmpkssj">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input type="date" v-model="pmp.pmpkssj"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="结束时间" prop="pmpjssj">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input type="date" v-model="pmp.pmpjssj" ></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="拍卖品图片" prop="pmptplj">
+					<el-col :span="6">
+						<div v-if="img!=''"><el-image style="width: 60px; height: 60px" :src="img" :preview-src-list="srcList">
+								</el-image></div>
+						<el-upload action='' :on-change="getFile" :limit="1" list-type="picture" :auto-upload="false">
+						<el-button size="small" type="primary">点击上传</el-button>
+					</el-upload>
+					
+					</el-col>
+				</el-form-item>
+				<el-form-item label="描述" prop="pmpms">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="pmp.pmpms" type="textarea" style="width: 350px;" placeholder="请输入介绍"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="adduser">提交</el-button>
+					<el-button type="danger">取消</el-button>
+				</el-form-item>
+			</el-form>
+		</div>
+
+	</body>
+	<script>
+		var addsApp = new Vue({
+			el: '#addsApp',
+			data: {
+				img:'',
+				pmpid:0,
+				loading: true,
+				pmp: {
+					pmpid:0,
+					pmpname: '',
+					pmpqpj: '',
+					pmpdj: '',
+					pmpkssj: '',
+					pmpjssj: '',
+					pmptpkzm: '',
+					pmpms: ''
+				},
+				shoppRules: {
+					sno: [{
+						required: true,
+						message: '名称不能为空',
+						trigger: 'blur' //移除触发
+					}],
+					sname: [{
+						required: true,
+						message: '请输入起拍价',
+						trigger: 'blur'
+					}],
+					sbiao: [{
+						required: true,
+						message: '请输入底价',
+						trigger: 'blur'
+					}],
+					shao: [{
+						required: true,
+						message: '请输入开始时间',
+						trigger: 'blur'
+					}],
+					sprice: [{
+						required: true,
+						message: '请输入结束时间',
+						trigger: 'blur'
+					}],
+					/*simg: [{
+						required: true,
+						message: '请输入商品图片',
+						trigger: 'blur'
+					}],*/
+					stext: [{
+						required: true,
+						message: '请输入介绍',
+						trigger: 'blur'
+					}]
+				}
+			},
+			methods: {
+				getBase64(file) {
+					return new Promise(function(resolve, reject) {
+						let reader = new FileReader();
+						let imgResult = "";
+						reader.readAsDataURL(file);
+						reader.onload = function() {
+							imgResult = reader.result;
+						};
+						reader.onerror = function(error) {
+							reject(error);
+						};
+						reader.onloadend = function() {
+							resolve(imgResult);
+						};
+					});
+				},
+				handleAvatarSuccess(res, file) {
+					this.imageUrl = URL.createObjectURL(file.raw);
+				},
+				beforeAvatarUpload(file) {
+					const isJPG = file.type === 'image/jpeg';
+					const isLt2M = file.size / 1024 / 1024 < 2;
+
+					if(!isJPG) {
+						this.$message.error('上传头像图片只能是 JPG 格式!');
+					}
+					if(!isLt2M) {
+						this.$message.error('上传头像图片大小不能超过 2MB!');
+					}
+					return isJPG && isLt2M;
+				},
+				getFile(file, fileList) {
+					//图片名称
+					this.filename = file.name;
+					//调用base64方法
+					this.getBase64(file.raw).then(res => {
+						console.log(res)
+						this.pmp.pmptpkzm = res;
+					});
+				},
+				adduser() {
+					let _this = this;
+					this.$refs['shoppForm'].validate(valid => {
+						if(valid) {
+							$.ajax(`http://127.0.0.1:8080/api/paimai/addpmp`, 
+							{
+								type: "post",
+								contentType: "application/json",
+								data: JSON.stringify(_this.pmp),
+								dataType: "json",
+								success(date) {
+									if(date.code == "200") {
+										_this.$message(date.msg);
+										indexApp.showView('拍卖商品管理页.html');
+									} else {
+										_this.$message(date.msg);
+									}
+								}
+							});
+						} else {
+							//验证失败
+							this.$alert('请按格式正确填写信息', '系统提示');
+						}
+					});
+				},
+				goToPage(){
+					let _this = this;
+					$.getJSON(`http://127.0.0.1:8080/api/paimai/jingpaiwu/${_this.pmp.pmpid}`, function(date) 
+					{
+						_this.pmp=date;
+						_this.img=date.pmptpkzm;
+					});
+				}
+			},
+			mounted() {
+				setTimeout(() => {
+					this.loading = false;
+					this.pmpid = sessionStorage.getItem('pmpid1');
+					if(this.pmpid!="null"){
+						this.pmp.pmpid=this.pmpid;
+						sessionStorage.setItem('pmpid1', null);
+						this.goToPage();
+					}
+				}, 1000);
+			}
+		});
+	</script>
+
+</html>

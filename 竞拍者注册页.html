@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>无标题文档</title>
+		<link href="css/common.css" rel="stylesheet" type="text/css" />
+		<link href="css/style.css" rel="stylesheet" type="text/css" />
+		<link rel="stylesheet" href="css/index.css" />
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/jquery-1.12.4.js"></script>
+		<script type="text/javascript" src="js/jq_ajax_config.js"></script>
+	</head>
+
+	<body>
+		<div id="addsApp">
+			<el-row>
+				<div>
+					<h2 style="color: #0096FF; float: left;">用户注册</h2>
+				</div>
+			</el-row>
+			<el-form :model="user" ref="shoppForm" :rules="shoppRules" label-width="100px">
+				<el-form-item label="用户名" prop="username">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="user.username" placeholder="请输入用户名"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="密码" prop="usermm">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="user.usermm" placeholder="请输入密码"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="身份证号" prop="usersfz">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="user.usersfz" placeholder="请输入身份证号"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="电话" prop="userdh">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="user.userdh" placeholder="请输入电话"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="住址" prop="userdz">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="user.userdz" placeholder="请输入住址"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="邮政编码" prop="useryzbh">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="user.useryzbh" placeholder="请输入邮政编码"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="验证码" prop="yzm">
+					<el-col :span="4">
+						<!--非常重要-->
+						<el-input v-model="user.yzm" placeholder="请输入验证码"></el-input>
+					</el-col>
+					<span class="wordp lf"><img src="img/img2.jpg" width="96" height="27" alt="" /></span>
+					<span class="lf"><a href="" title="">看不清</a></span>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="4">
+						<input name="" type="checkbox" id="rem_u" />
+						<label for="rem_u" class="labels">我同意<span class="blues">《服务条款》</span></label>
+					</el-col>
+				</el-form-item>
+
+				<el-form-item>
+					<el-col :span="4">
+						<el-button type="primary" @click="adduser">立即注册</el-button>
+					</el-col>
+				</el-form-item>
+			</el-form>
+		</div>
+
+	</body>
+	<script type="text/javascript" src="js/index.js"></script>
+	<script>
+		var addsApp = new Vue({
+			el: '#addsApp',
+			data: {
+				user: {
+					username: '',
+					usermm: '',
+					usersfz: '',
+					userdh: '',
+					userdz: '',
+					useryzbh: '',
+					yzm: ''
+				},
+				shoppRules: {
+					username: [{
+						required: true,
+						message: '用户名不能为空',
+						trigger: 'blur' //移除触发
+					}],
+					usermm: [{
+						required: true,
+						message: '请输入密码',
+						trigger: 'blur'
+					}],
+					usersfz: [{
+							required: true,
+							message: '请输入身份证号',
+							trigger: 'blur'
+					},
+					/*{
+						min: 18,
+						max: 18,
+						message: '身份证号长度 为18个字符',
+						trigger: 'blur'
+					}*/
+					],
+					userdh: [{
+						required: true,
+						message: '请输入电话',
+						trigger: 'blur'
+					}, 
+					/*{
+						min: 11,
+						max: 11,
+						message: '电话长度 为11个数字',
+						trigger: 'blur'
+					}*/
+					],
+					userdz: [{
+						required: true,
+						message: '请输入住址',
+						trigger: 'blur'
+					}],
+					useryzbh: [{
+						required: true,
+						message: '请输入邮政编码',
+						trigger: 'blur'
+					}],
+					yzm: [{
+						required: true,
+						message: '请输入验证码',
+						trigger: 'blur'
+					}]
+				}
+
+			},
+			methods: {
+				adduser() {
+					let _this = this;
+					this.$refs['shoppForm'].validate(valid => {
+						if(valid) {
+							$.ajax(`http://127.0.0.1:8080/api/paimai/zhuce`, 
+								{
+								type: "post",
+								contentType: "application/json",
+								data: JSON.stringify(_this.user),
+								dataType: "json",
+								success(date) {
+									if(date.code == "200") {
+										_this.$message(date.msg);
+										setTimeout(() => {
+          									_this.showView('竞拍者登录.html')
+        								}, 1000);
+									}else{
+										_this.$message(date.msg);
+									}
+								}
+							});
+						} else {
+							//验证失败
+							this.$alert('请按格式正确填写信息', '系统提示');
+						}
+					});
+				},
+				showView(url) {
+					window.location.href = url;
+				}
+			}
+		});
+	</script>
+
+</html>

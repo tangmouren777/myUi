@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>另外一个页面</title>
+	</head>
+
+	<body>
+		<div id="addApp">
+			<el-form :model="person" ref="personForm" :rules="personRules" label-width="80px">
+				<el-form-item label="会员编号" prop="pid">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model.number="person.pid"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="会员名称" prop="pname">
+					<el-col :span="6">
+						<el-input v-model="person.pname" placeholder="请输入会员名称"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="会员性别" prop="psex">
+					<el-col :span="6">
+						<el-radio-group v-model="person.psex">
+							<el-radio v-for="(temp,index) in sexs" :label="index">
+								{{temp}}
+							</el-radio>
+						</el-radio-group>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="会员生日" prop="pdate">
+					<el-col :span="6">
+						<el-date-picker v-model="person.pdate" type="date" placeholder="选择日期时间">
+						</el-date-picker>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="addPerson">新增</el-button>
+					<el-button type="danger" @click="goBack">取消</el-button>
+				</el-form-item>
+			</el-form>
+		</div>
+	</body>
+
+	<script>
+		//js中日期格式转换
+		function dateToString(date) {
+			var year = date.getFullYear();
+			var month = (date.getMonth() + 1).toString();
+			var day = (date.getDate()).toString();
+			if(month.length == 1) {
+				month = "0" + month;
+			}
+			if(day.length == 1) {
+				day = "0" + day;
+			}
+			var dateTime = year + "-" + month + "-" + day;
+			return dateTime;
+		}
+
+		function stringToDate(dateStr, separator) {
+			if(!separator) {
+				separator = "-";
+			}
+			var dateArr = dateStr.split(separator);
+			var year = parseInt(dateArr[0]);
+			var month;
+			if(dateArr[1].indexOf("0") == 0) {
+				month = parseInt(dateArr[1].substring(1));
+			} else {
+				month = parseInt(dateArr[1]);
+			}
+			var day = parseInt(dateArr[2]);
+			var date = new Date(year, month - 1, day);
+			return date;
+		}
+
+		var date = new Date();
+		var dateStr = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+
+		var addApp = new Vue({
+			el: "#addApp",
+			data: {
+				person: {
+					pid: "",
+					pname: "",
+					psex: "",
+					pdate: dateToString(new Date()),
+				},
+				sexs: ['男', '女'],
+				personRules: {
+					pid: [{
+							required: true,
+							message: '会员编号不能为空',
+							trigger: 'blur' //移除触发
+						},
+						{
+							type: 'number',
+							message: '会员编号为数字值',
+							trigger: 'blur'
+						}
+					],
+					pname: [{
+							required: true,
+							message: '请输入会员名称',
+							trigger: 'blur'
+						},
+						{
+							min: 2,
+							max: 5,
+							message: '长度在 2 到 5 个字符',
+							trigger: 'blur'
+						}
+					],
+					pdate: [{
+						required: true,
+						message: '请选择生日',
+						trigger: 'change'
+					}]
+
+				}
+			},
+			methods: {
+				clearData() {
+					this.person = {
+							pid: "",
+							pname: "",
+							psex: "",
+							pdate: dateToString(new Date())
+						},
+					this.sexs = ['男', '女'];
+				},
+				goBack() {
+					indexApp.showView('work.html'); //调用主页的vm引擎方法
+				},
+				addPerson() {
+					let _this = this;
+					this.$refs['personForm'].validate(valid => {
+						if(valid) {
+							//验证通过
+							//自定义加载块
+							const loading = this.$loading({
+								lock: true,
+								text: '努力更新中....',
+								spinner: 'el-icon-loading',
+								background: 'rgba(0, 0, 0, 0.5)'
+							});
+							//延迟2秒，模拟网络延迟
+							setTimeout(() => {
+								
+								$.ajax('http://localhost:8080/springmvc_4/api/persons/person', {
+									type: 'post',
+									data: JSON.stringify(this.person),
+									dataType: 'json',
+									contentType: 'application/json',
+									success(msg) {
+										if(msg.code == "200") {
+											loading.close(); //关闭加载块【非常重要】
+											_this.$message({
+												type: 'success',
+												message: '新增成功'
+											});
+											_this.clearData(); //清除数据
+										}
+									}
+								});
+							}, 2000);
+						} else {
+							//验证失败
+							this.$alert('请按格式正确填写信息', '系统提示');
+						}
+					});
+				}
+			}
+		});
+	</script>
+
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>无标题文档</title>
+		<link href="css/common.css" rel="stylesheet" type="text/css" />
+		<link href="css/style.css" rel="stylesheet" type="text/css" />
+		<link rel="stylesheet" href="css/index.css" />
+		<style>
+			.el-table .warning-row {
+				background: #EBF6FA;
+			}
+			
+			.el-table .success-row {
+				background: #EBF6FA;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="personApp" v-loading="loading" style="width: 80%;">
+			<el-row>
+				<div>
+					<h1 class="lf">在线拍卖系统</h1>
+				</div>
+			</el-row>
+
+			<el-row>
+				<el-col :span="12">
+					<el-table :default-sort="{prop: 'pdate', order: 'descending'}" :data="pmp" border :row-class-name="tableRowClassName">
+						<el-table-column prop="pmpname" label="名称">
+						</el-table-column>
+						<el-table-column prop="pmpms" label="描述">
+						</el-table-column>
+						<el-table-column prop="pmpkssj" label="开始时间">
+						</el-table-column>
+						<el-table-column prop="pmpjssj" label="结束时间">
+						</el-table-column>
+						<el-table-column prop="pmpqpj" label="起拍价">
+						</el-table-column>
+					</el-table>
+				</el-col>
+				<div><el-image style="width: 60px; height: 60px" :src="img" :preview-src-list="srcList">
+								</el-image></div>
+			</el-row>
+			<br />
+
+			<div style="border: 0px solid #7EABAB; width: 40%; height: 40%;">
+				<el-form :model="pmpjia" ref="shoppForm" :rules="shoppRules" label-width="50px">
+					<el-form-item label="出价" prop="jpjg">
+						<el-input v-model="pmpjia.jpjg" style="width: 300px;"></el-input>
+						<el-button style="float: right;" @click="jingjia" type="primary" round>竞拍</el-button>
+					</el-form-item>
+				</el-form>
+			</div>
+
+			<el-row>
+				<h1 class="lf">出价记录</h1>
+			</el-row>
+
+			<el-row>
+				<el-col :span="12">
+					<el-table :default-sort="{prop: 'pdate', order: 'descending'}" :data="userpageInfo" border :row-class-name="tableRowClassName">
+						<el-table-column prop="jpsj" label="竞拍时间">
+						</el-table-column>
+						<el-table-column prop="jpjg" label="竞拍价格">
+						</el-table-column>
+						<el-table-column prop="username" label="竞拍人">
+						</el-table-column>
+
+					</el-table>
+				</el-col>
+			</el-row>
+		</div>
+
+	</body>
+	<script>
+		var personApp = new Vue({
+			el: '#personApp',
+			data: {
+				img:'',
+				zuigaojia: 0,
+				id: '',
+				userpageInfo: [],
+				pmp: [],
+				pmpjia: {
+					jpjg: 0
+				},
+				loading: true,
+				shoppRules: {
+					jpjg: [{
+						required: true,
+						message: '用户名不能为空',
+						trigger: 'blur' //移除触发
+					}]
+				},
+				jl: {
+					userid: '',
+					pmpid: '',
+					jpsj: '',
+					jpjg: 0
+				}
+			},
+			methods: {
+				jingjia() {
+					let _this = this;
+					this.$refs['shoppForm'].validate(valid => {
+						if(valid) {
+							if(_this.pmpjia.jpjg > _this.zuigaojia) {
+								_this.jl.userid = indexApp.user.userid;
+								_this.jl.jpjg = _this.pmpjia.jpjg;
+								$.ajax(`http://127.0.0.1:8080/api/paimai/addjl`, 
+								{
+									type: "post",
+									contentType: "application/json",
+									data: JSON.stringify(_this.jl),
+									dataType: "json",
+									success(date) {
+										if(date.code == "200") {
+											_this.$message(date.msg);
+											indexApp.showView('竞拍页.html');
+										} else {
+											_this.$message(date.msg);
+										}
+									}
+								});
+							}else{
+								this.$alert('请开出比最高报价者更高的价位');
+							}
+						} else {
+							//验证失败
+							this.$alert('请开出比最高报价者更高的价位');
+						}
+					});
+				},
+				tableRowClassName({
+					row,
+					rowIndex
+				}) {
+					if(rowIndex === 1) {
+						return 'warning-row';
+					} else if(rowIndex === 3) {
+						return 'success-row';
+					}
+					return '';
+				},
+				showInfo(pid) {
+					//indexApp.showView('info.html');
+					sessionStorage.setItem('pid', pid);
+				},
+				goToPage() {
+					let _this = this;
+					$.getJSON(`http://127.0.0.1:8080/api/paimai/jingpaiwu/${_this.id}`, function(date) {
+						_this.pmp.splice(0, 0, date);
+						_this.img=date.pmptpkzm;
+						_this.jl.pmpid = date.pmpid;
+						$.getJSON(`http://127.0.0.1:8080/api/paimai/jingpairen/${_this.id}`, function(date1) {
+							if(date1 == '') {
+								_this.zuigaojia = date.pmpqpj;
+								_this.pmpjia.jpjg = date.pmpqpj;
+							} else {
+								_this.userpageInfo = date1;
+								$.getJSON(`http://127.0.0.1:8080/api/paimai/jingpaijia/${_this.id}`, function(date2) {
+									_this.pmpjia.jpjg = date2.jpjg;
+									_this.zuigaojia = date2.jpjg;
+								});
+							}
+						});
+					});
+				}
+			},
+			mounted() {
+				setTimeout(() => {
+					this.loading = false;
+					this.id = sessionStorage.getItem('pmpid');
+					this.goToPage();
+				}, 1000);
+
+			}
+		});
+	</script>
+
+</html>

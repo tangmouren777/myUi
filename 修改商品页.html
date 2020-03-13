@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="css/common.css" rel="stylesheet" type="text/css" />
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div id="addsApp">
+				<el-row>
+					<div>
+				    <h1 class="lf">在线拍卖系统</h1>
+				  </div>
+			  </el-row>
+			  <el-row>
+					<div>
+				    <h2 style="color: #0096FF; float: left;">拍卖商品信息</h2>
+				  </div>
+			  </el-row>
+			<el-form :model="shopp" ref="shoppForm" :rules="shoppRules" label-width="100px">
+				<el-form-item label="名称" prop="sno">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="shopp.sno" value="名称"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="起拍价" prop="sname">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="shopp.sname" value="4000"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="底价" prop="sbiao">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="shopp.sbiao" value="5000"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="开始时间" prop="shao">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="shopp.shao" value="2010-01-05 12:30:00"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="结束时间" prop="sprice">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="shopp.sprice" value="2010-05-06 12:30:00"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="拍卖品图片" prop="">
+					<el-col :span="6">
+						<div class="lf salebd"><a href="#"><img src="img/ad20.jpg" width="100" height="100" /></a></div>
+              <el-input type="file"/>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="描述" prop="stext">
+					<el-col :span="6">
+						<!--非常重要-->
+						<el-input v-model="shopp.stext" type="textarea" style="width: 350px;" value="嘿嘿"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="adduser">提交</el-button>
+					<el-button type="danger">取消</el-button>
+				</el-form-item>
+			</el-form>
+		</div>
+
+</body>
+<script>
+		var addsApp=new Vue({
+			el:'#addsApp',
+			data:{
+				shopp:{
+					sno:'',
+					sname:'',
+					sbiao:'',
+					shao:'',
+					sprice:'',
+					simg:'',
+					stext:''
+					
+				},
+				shoppRules:{
+					sno: [{
+							required: true,
+							message: '名称不能为空',
+							trigger: 'blur' //移除触发
+						}
+					],
+					sname: [{
+							required: true,
+							message: '请输入起拍价',
+							trigger: 'blur'
+						}
+					],
+					sbiao: [{
+						required: true,
+						message: '请输入底价',
+						trigger: 'blur'
+					}],
+					shao: [{
+						required: true,
+						message: '请输入开始时间',
+						trigger: 'blur'
+					}],
+					sprice: [{
+						required: true,
+						message: '请输入结束时间',
+						trigger: 'blur'
+					}],
+					/*simg: [{
+						required: true,
+						message: '请输入商品图片',
+						trigger: 'blur'
+					}],*/
+					stext: [{
+						required: true,
+						message: '请输入介绍',
+						trigger: 'blur'
+					}]
+				}
+				
+				
+			},
+			methods: {
+				adduser() {
+					let _this = this;
+					this.$refs['shoppForm'].validate(valid => {
+						if(valid) {
+							//验证通过
+							//自定义加载块
+							
+						} else {
+							//验证失败
+							this.$alert('请按格式正确填写信息', '系统提示');
+						}
+					});
+				}
+			}
+		});
+	</script>
+</html>
